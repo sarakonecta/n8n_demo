@@ -2,11 +2,11 @@
 
 An n8n workflow that generates personalized learning paths for any technology.
 
-## 🎯 Objective
+## Objective
 
 Complement the CrewAI project (which evaluates technologies) with a system that analyzes **how to learn them**, by querying real resources from GitHub, Dev.to, and StackOverflow.
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **n8n** (workflow automation)
 - **GitHub API** (repositories and tutorials)
@@ -15,7 +15,7 @@ Complement the CrewAI project (which evaluates technologies) with a system that 
 - **LiteLLM** (Gemini 2.5 Flash)
 - **JavaScript** (data processing)
 
-## 📋 Workflow Structure (10 nodes)
+## Workflow Structure (10 nodes)
 
 1. **Manual Trigger** - Starts the workflow
 2. **Edit Fields** - Input technology to analyze
@@ -28,7 +28,7 @@ Complement the CrewAI project (which evaluates technologies) with a system that 
 9. **LiteLLM** - Generates the Learning Path with AI
 10. **Edit Fields (Output)** - Formats final result
 
-## 🚀 How to Run
+## How to Run
 
 1. Start n8n:
 ```bash
@@ -43,30 +43,24 @@ docker-compose up -d
 
 5. Click "Execute workflow"
 
-## 📊 Output
+## Output
 
 The workflow generates a structured learning plan with:
-- 📊 Summary of available resources
-- 📅 Weekly roadmap (Week 1, 2, 3)
-- ⭐ Best resources by platform
-- ⏱️ Estimated time
-- 📈 Difficulty level
+- Summary of available resources
+- Weekly roadmap (Week 1, 2, 3)
+- Best resources by platform
+- Estimated time
+- Difficulty level
 
-## 🔗 Complement with CrewAI
+## Complement with CrewAI
 
 - **CrewAI** → Evaluates the technology (repo health, community, maturity)
 - **n8n** → Analyzes how to learn it (resources, plan, timeline)
 
-## 📁 Project Structure
+## Project Structure
 ```
 n8n_demo/
 ├── docker-compose.yml          # Docker configuration for n8n
 ├── README.md                   # This file
 └── Tech_Learning_Path_Generator.json  # Exported workflow (backup)
 ```
-
-## 🎯 Challenge Requirements
-
-✅ n8n installed locally (Docker)
-✅ Working workflow with minimum 6 steps (10 nodes implemented)
-✅ Functional demonstration ready
