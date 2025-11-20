@@ -19,7 +19,7 @@
             {
               "id": "3e71e5c6-ad94-4996-8788-494589ffb24d",
               "name": "technology",
-              "value": "fastmcp",
+              "value": "FastAPI",
               "type": "string"
             }
           ]
@@ -253,7 +253,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n\nconst prompt = `Analiza estos recursos de aprendizaje para ${data.technology}:\n\nTotal: ${data.totalResources} recursos encontrados\n- GitHub repos: ${data.githubCount}\n- Dev.to articles: ${data.devtoCount}\n- StackOverflow questions: ${data.stackoverflowCount}\n\nRecursos principales:\n${data.resourcesText}\n\nGenera un Learning Path estructurado con:\n1. 📊 Resumen de disponibilidad de recursos\n2. 📅 Roadmap semanal (Week 1, Week 2, Week 3)\n3. ⭐ Mejores recursos por plataforma\n4. ⏱️ Tiempo estimado de aprendizaje\n5. 📈 Nivel de dificultad\n\nFormato: Markdown con emojis y secciones claras.`;\n\nreturn [{\n  json: {\n    model: \"gemini-2.5-flash\",\n    messages: [\n      {\n        role: \"user\",\n        content: prompt\n      }\n    ]\n  }\n}];"
+        "jsCode": "const data = $input.first().json;\n\nconst prompt = `Analyze these learning resources for ${data.technology}:\n\nTotal: ${data.totalResources} resources found\n- GitHub repos: ${data.githubCount}\n- Dev.to articles: ${data.devtoCount}\n- StackOverflow questions: ${data.stackoverflowCount}\n\nKey resources:\n${data.resourcesText}\n\nGenerate a structured Learning Path including:\n1. 📅 Weekly roadmap (Week 1, Week 2, Week 3)\n2. ⭐ Top resources by platform\n3. ⏱️ Estimated learning time\n4. 📈 Difficulty level\n\nFormat: Markdown with emojis and clear sections.`;\n\nreturn [{\n  json: {\n    model: \"gemini-2.5-flash\",\n    messages: [\n      {\n        role: \"user\",\n        content: prompt\n      }\n    ]\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

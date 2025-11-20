@@ -46,7 +46,6 @@ docker-compose up -d
 ## Output
 
 The workflow generates a structured learning plan with:
-- Summary of available resources
 - Weekly roadmap (Week 1, 2, 3)
 - Best resources by platform
 - Estimated time
