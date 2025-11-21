@@ -37,72 +37,6 @@
     },
     {
       "parameters": {
-        "url": "https://dev.to/api/articles",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "tag",
-              "value": "={{$json.technology}}"
-            },
-            {
-              "name": "per_page",
-              "value": "10"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        416,
-        48
-      ],
-      "id": "e9a65176-ef3c-4d00-abee-d6f17b0bb8b3",
-      "name": "Dev.to API"
-    },
-    {
-      "parameters": {
-        "url": "https://api.stackexchange.com/2.3/search",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "order",
-              "value": "desc"
-            },
-            {
-              "name": "sort",
-              "value": "votes"
-            },
-            {
-              "name": "intitle",
-              "value": "={{$json.technology}}"
-            },
-            {
-              "name": "site",
-              "value": "stackoverflow"
-            },
-            {
-              "name": "pagesize",
-              "value": "10"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        416,
-        288
-      ],
-      "id": "63c46ce3-6d4c-44bf-8af5-704511ae7eab",
-      "name": "StackOverflow API"
-    },
-    {
-      "parameters": {
         "jsCode": "// Obtenemos todos los inputs\nconst allInputs = $input.all();\n\n// Capturamos la tecnología del primer input que la tenga\nconst techInput = allInputs.find(input => input.json.technology);\nconst technology = techInput ? techInput.json.technology : 'unknown';\n\nlet githubRepos = [];\nlet devtoArticles = [];\nlet stackoverflowQuestions = [];\n\n// Procesamos cada input\nfor (const input of allInputs) {\n  const data = input.json;\n  \n  // GitHub\n  if (data.items && data.items.length > 0 && data.items[0]?.full_name) {\n    githubRepos = data.items.map(repo => ({\n      title: repo.full_name,\n      url: repo.html_url,\n      stars: repo.stargazers_count,\n      description: (repo.description || 'No description').substring(0, 100)\n    }));\n  }\n  \n  // Dev.to\n  if (Array.isArray(data)) {\n    devtoArticles = data.map(article => ({\n      title: article.title,\n      url: article.url,\n      reactions: article.public_reactions_count || 0\n    }));\n  } else if (data.type_of === 'article') {\n    devtoArticles = [{\n      title: data.title,\n      url: data.url,\n      reactions: data.public_reactions_count || 0\n    }];\n  }\n  \n  // StackOverflow\n  if (data.items && data.items.length > 0 && data.items[0]?.question_id) {\n    stackoverflowQuestions = data.items.map(item => ({\n      title: item.title,\n      url: item.link,\n      score: item.score\n    }));\n  }\n}\n\n// Crear texto resumen de recursos\nconst resourceText = [\n  ...githubRepos.map(r => `📦 GitHub: ${r.title} (⭐${r.stars})\\n   ${r.url}`),\n  ...devtoArticles.map(r => `📝 Dev.to: ${r.title} (❤️${r.reactions})\\n   ${r.url}`),\n  ...stackoverflowQuestions.map(r => `❓ StackOverflow: ${r.title} (👍${r.score})\\n   ${r.url}`)\n].join('\\n\\n');\n\nreturn [{\n  json: {\n    technology: technology,\n    totalResources: githubRepos.length + devtoArticles.length + stackoverflowQuestions.length,\n    githubCount: githubRepos.length,\n    devtoCount: devtoArticles.length,\n    stackoverflowCount: stackoverflowQuestions.length,\n    resourcesText: resourceText\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
@@ -201,6 +135,32 @@
     },
     {
       "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        672,
+        32
+      ],
+      "id": "6276fadc-0422-454e-b90d-4dd716f2995e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst prompt = `Analyze these learning resources for ${data.technology}:\n\nTotal: ${data.totalResources} resources found\n- GitHub repos: ${data.githubCount}\n- Dev.to articles: ${data.devtoCount}\n- StackOverflow questions: ${data.stackoverflowCount}\n\nKey resources:\n${data.resourcesText}\n\nGenerate a structured Learning Path including:\n1. 📅 Weekly roadmap (Week 1, Week 2, Week 3)\n2. ⭐ Top resources by platform\n3. ⏱️ Estimated learning time\n4. 📈 Difficulty level\n\nFormat your response in clean markdown without escape characters (\\n). Use real line breaks and standard markdown formatting.`;\n\nreturn [{\n  json: {\n    model: \"gemini-2.5-flash\",\n    messages: [\n      {\n        role: \"user\",\n        content: prompt\n      }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        48
+      ],
+      "id": "89dd5ff8-0b34-49ef-a3b4-34fb10972197",
+      "name": "Prepare LLM Request"
+    },
+    {
+      "parameters": {
         "url": "https://api.github.com/search/repositories",
         "sendQuery": true,
         "queryParameters": {
@@ -236,33 +196,86 @@
         -176
       ],
       "id": "6bbf6a29-324e-45a4-8b6b-5ab7f248efea",
-      "name": "GitHub API"
+      "name": "GitHub"
     },
     {
       "parameters": {
-        "numberInputs": 4
+        "url": "https://dev.to/api/articles",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "tag",
+              "value": "={{$json.technology}}"
+            },
+            {
+              "name": "per_page",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
-        672,
-        16
+        416,
+        48
       ],
-      "id": "6276fadc-0422-454e-b90d-4dd716f2995e",
-      "name": "Merge"
+      "id": "e9a65176-ef3c-4d00-abee-d6f17b0bb8b3",
+      "name": "Dev.to"
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.first().json;\n\nconst prompt = `Analyze these learning resources for ${data.technology}:\n\nTotal: ${data.totalResources} resources found\n- GitHub repos: ${data.githubCount}\n- Dev.to articles: ${data.devtoCount}\n- StackOverflow questions: ${data.stackoverflowCount}\n\nKey resources:\n${data.resourcesText}\n\nGenerate a structured Learning Path including:\n1. 📅 Weekly roadmap (Week 1, Week 2, Week 3)\n2. ⭐ Top resources by platform\n3. ⏱️ Estimated learning time\n4. 📈 Difficulty level\n\nFormat: Markdown with emojis and clear sections.`;\n\nreturn [{\n  json: {\n    model: \"gemini-2.5-flash\",\n    messages: [\n      {\n        role: \"user\",\n        content: prompt\n      }\n    ]\n  }\n}];"
+        "url": "https://api.stackexchange.com/2.3/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "order",
+              "value": "desc"
+            },
+            {
+              "name": "sort",
+              "value": "votes"
+            },
+            {
+              "name": "intitle",
+              "value": "={{$json.technology}}"
+            },
+            {
+              "name": "site",
+              "value": "stackoverflow"
+            },
+            {
+              "name": "pagesize",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        288
+      ],
+      "id": "63c46ce3-6d4c-44bf-8af5-704511ae7eab",
+      "name": "StackOverflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.learningPath;\n\n// Limpiar los escapes de \\n\nconst cleanText = text.replace(/\\\\n/g, '\\n');\n\n// Convertir a binario (base64)\nconst buffer = Buffer.from(cleanText, 'utf-8');\n\nreturn {\n  json: {\n    fileName: 'learning-path.md'\n  },\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/markdown',\n      fileName: 'learning-path.md'\n    }\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1088,
+        1680,
         48
       ],
-      "id": "89dd5ff8-0b34-49ef-a3b4-34fb10972197",
-      "name": "Prepare LLM Request"
+      "id": "af1ef290-91f1-467d-a27f-d89c973e38dc",
+      "name": "Code in JavaScript1"
     }
   ],
   "pinData": {},
@@ -282,17 +295,17 @@
       "main": [
         [
           {
-            "node": "GitHub API",
+            "node": "GitHub",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Dev.to API",
+            "node": "Dev.to",
             "type": "main",
             "index": 0
           },
           {
-            "node": "StackOverflow API",
+            "node": "StackOverflow",
             "type": "main",
             "index": 0
           },
@@ -300,28 +313,6 @@
             "node": "Merge",
             "type": "main",
             "index": 3
-          }
-        ]
-      ]
-    },
-    "Dev.to API": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "StackOverflow API": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 2
           }
         ]
       ]
@@ -342,17 +333,6 @@
         [
           {
             "node": "Edit Fields1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "GitHub API": {
-      "main": [
-        [
-          {
-            "node": "Merge",
             "type": "main",
             "index": 0
           }
@@ -380,13 +360,62 @@
           }
         ]
       ]
+    },
+    "GitHub": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dev.to": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "StackOverflow": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ece51770-ce0b-4405-b383-ae11fb829816",
+  "versionId": "823b7973-5041-45b9-86a0-522b9a2a0279",
   "meta": {
     "instanceId": "9609e0aee3d54bde36c274f6881548d07769f3a8bbfa27c6986ddc9bf479f60e"
   },

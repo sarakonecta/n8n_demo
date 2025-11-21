@@ -15,7 +15,7 @@ Complement the CrewAI project (which evaluates technologies) with a system that 
 - **LiteLLM** (Gemini 2.5 Flash)
 - **JavaScript** (data processing)
 
-## Workflow Structure (10 nodes)
+## Workflow Structure (11 nodes)
 
 1. **Manual Trigger** - Starts the workflow
 2. **Edit Fields** - Input technology to analyze
@@ -27,6 +27,7 @@ Complement the CrewAI project (which evaluates technologies) with a system that 
 8. **Prepare LLM Request** - Prepares the prompt for Gemini
 9. **LiteLLM** - Generates the Learning Path with AI
 10. **Edit Fields (Output)** - Formats final result
+11. **Code (Markdown Export)** - Converts output to downloadable .md file
 
 ## How to Run
 
@@ -50,6 +51,13 @@ The workflow generates a structured learning plan with:
 - Best resources by platform
 - Estimated time
 - Difficulty level
+
+### Download Learning Path
+
+After execution, the final **Code node** generates a downloadable `.md` file. You can:
+- Click on the Code node output
+- Download the markdown file directly from n8n
+- Open it in VSCode or any markdown viewer for better readability
 
 ## Complement with CrewAI
 
